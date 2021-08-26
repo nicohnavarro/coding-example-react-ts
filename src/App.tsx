@@ -74,12 +74,18 @@ const sortData = (
   });
 };
 
-const getNextSortingDirection =(current:SortingDirections)=>{
+const getNextSortingDirection = (current: SortingDirections) => {
   if (
     current === SortingDirections.UNSORTED ||
     current === SortingDirections.ASCENCING
-  ) return SortingDirections.DESCENDING;
-   else return SortingDirections.ASCENCING;
+  )
+    return SortingDirections.DESCENDING;
+  else return SortingDirections.ASCENCING;
+};
+
+const getFilterRows = (rows:any[],filterKey:string)=>{
+ // return rows.filter((row:any)=>JSON.stringify(row).toLocaleLowerCase().includes(filterKey));
+return rows.filter((row:any)=>Object.values(row).some(s=> (''+s).toLocaleLowerCase().includes(filterKey)));
 }
 
 function App() {
@@ -89,7 +95,7 @@ function App() {
     data: [],
   });
   const [sortingDirections, setSortingDirections] = useState<any>({});
-
+  const [searchField, setSearchField] = useState("");
   useEffect(() => {
     fetchData().then((apiPeople) => {
       setPeople(apiPeople);
@@ -114,9 +120,11 @@ function App() {
     };
 
     const currentSortingDirection = sortingDirections[sortKey];
-    sortData(newFlattenedLocations.data,sortKey,currentSortingDirection);
-    const nextSortingDirection = getNextSortingDirection(currentSortingDirection);
-    const newSortingDirections:any = {...sortingDirections};
+    sortData(newFlattenedLocations.data, sortKey, currentSortingDirection);
+    const nextSortingDirection = getNextSortingDirection(
+      currentSortingDirection
+    );
+    const newSortingDirections: any = { ...sortingDirections };
     newSortingDirections[sortKey] = nextSortingDirection;
     setSortingDirections(newSortingDirections);
     setFlattenedLocations(newFlattenedLocations);
@@ -124,10 +132,16 @@ function App() {
 
   return (
     <div className="App">
-      <h2>Challenge</h2>
+      <h2>React Challenge</h2>
       {people.map((person: Person, personId: number) => (
         <div key={personId}>{person.name.first}</div>
       ))}
+      <input
+        value={searchField}
+        onChange={(e) => {
+          setSearchField(e.target.value);
+        }}
+      />
       <table>
         <thead>
           <tr>
@@ -146,7 +160,7 @@ function App() {
           </tr>
         </thead>
         <tbody>
-          {flattenedLocations.data.map(
+          {getFilterRows(flattenedLocations.data,searchField).map(
             (location: any, locationsIdx: number) => (
               <tr key={locationsIdx}>
                 {/*                 {Object.values(location).map(
